@@ -166,7 +166,14 @@ if [ "$LOOP" != "" ]; then
 	DST_SIZE=$((DST_BOOT_PARTITION_SIZE+DST_ROOT_PARTITION_SIZE+1024*500))
         echo "Checking necessary disk space..."
         DST_FS=$DST_FILE
-        until [[ `df|grep -c "${DST_FS}$"` -gt 0 ]]; do DST_FS=${DST_FS%/*}; done #getting filesystem of destination file
+        until [[ `df|grep -c "${DST_FS}$"` -gt 0 ]]; do  
+          echo "Controle: $DST_FS"
+          DST_FS=${DST_FS%/*}
+          if [ "$DST_FS" == "" ]; then
+            echo "Error: Destination file is on non mounted file system."
+            exit 1
+          fi
+        done #getting filesystem of destination file
 	if [ `df -k | grep $DST_FS | awk '{print $4}'` -le $((DST_SIZE*2)) ]; then
 		echo "Not enough free space in $DST_FS for the temporary file and the backup image. I need min. $((DST_SIZE*2/1024))MB. Aborting."
 		exit 1
