@@ -199,6 +199,9 @@ if [ "$LOOP" != "" ]; then
 	DST_DISK=${LOOP_DEVICE#/dev/}
 	DST_ROOT_PARTITION=/dev/mapper/${DST_DISK}p2
 	DST_BOOT_PARTITION=/dev/mapper/${DST_DISK}p1
+        echo "Control: $DST_DISK"
+        echo "Control: $DST_ROOT_PARTITION"
+        echo "Control: $DST_BOOT_PARTITION"
 else
 	DST_ROOT_PARTITION=/dev/${DST_DISK}2
 	DST_BOOT_PARTITION=/dev/${DST_DISK}1
@@ -252,6 +255,7 @@ expand_rootfs()
 	{
 	# Get the starting offset of the root partition
 	PART_START=$(parted /dev/mmcblk0 -ms unit s p | grep "^2" | cut -f 2 -d:)
+#greska ima dodatni S koji radi problema
 	[ "$PART_START" ] || return 1
 	# Return value will likely be error for fdisk as it fails to reload the
 	# partition table because the root fs is mounted
@@ -275,6 +279,8 @@ EOF
 #
 # Check that destination partitions are the right type.
 #
+echo "Control: $DST_DISK"
+exit 1
 DST_BOOT_PARTITION_TYPE=`parted /dev/$DST_DISK -ms p \
 		| grep "^1" | cut -f 5 -d:`
 DST_ROOT_PARTITION_TYPE=`parted /dev/$DST_DISK -ms p \
@@ -337,6 +343,7 @@ then
 			kpartx -av /dev/$DST_DISK
 		fi
 		mkfs.ext4 $DST_ROOT_PARTITION > /dev/null
+# mozda treba dodati -y
 
 		echo ""
 		echo "/dev/$DST_DISK is initialized and resized.  Its partitions are:"
